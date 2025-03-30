@@ -1,0 +1,23 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'auth-service'
+    static_configs:
+      - targets: ['auth-service:80']
+
+  - job_name: 'business-logic'
+    static_configs:
+      - targets: ['business-logic-service:80']
+
+  - job_name: 'upload-service'
+    static_configs:
+      - targets: ['upload-service:80']
+
+  - job_name: 'topics-service'
+    static_configs:
+      - targets: ['topics-service:80']
+
+  - job_name: 'display-service'
+    static_configs:
+      - targets: ['display-service:80']
