@@ -21,6 +21,8 @@ services:
       context: ./backend
     container_name: backend
     restart: always
+    ports:
+      - "8080:8080"
     expose:
       - "8080"
     depends_on:
@@ -54,8 +56,8 @@ services:
       KONG_ADMIN_ERROR_LOG: /dev/stderr
       KONG_ADMIN_LISTEN: 0.0.0.0:8001
     ports:
-      - "8000:8000"   # Portul public prin care Kong servește API-urile
-      - "8001:8001"   # Portul de admin pentru Kong
+      - "8000:8000"   # Portul public
+      - "8001:8001"   # Portul de admin
     volumes:
       - ./kong/kong.yml:/usr/local/kong/kong.yml
     networks:
@@ -69,6 +71,26 @@ services:
       - "9000:9000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - backend-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - backend-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: always
+    ports:
+      - "3001:3000"
     networks:
       - backend-network
 
