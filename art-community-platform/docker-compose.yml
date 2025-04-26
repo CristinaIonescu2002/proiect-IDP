@@ -1,104 +1,48 @@
 version: "3.8"
 
 services:
-  kong:
-    image: kong:3.4
-    ports:
-      - "8000:8000"     # Public API
-      - "8001:8001"     # Admin API
+  postgres-db:
+    image: postgres:13.2-alpine
+    container_name: postgres-db
+    restart: always
     environment:
-      KONG_DATABASE: "off"
-      KONG_DECLARATIVE_CONFIG: /usr/local/kong/kong.yml
+      POSTGRES_USER: mobylab-app
+      POSTGRES_DB: mobylab-app
+      POSTGRES_PASSWORD: mobylab-app
+    ports:
+      - "5432:5432"
     volumes:
-      - ./kong/kong.yml:/usr/local/kong/kong.yml
+      - db-data:/var/lib/postgresql/data
     networks:
-      - artisthub-net
+      - backend-network
 
-  auth-service:
-    build: ./auth-service
-    image: artisthub/auth-service
+  backend:
+    build:
+      context: ./backend
+    container_name: backend
+    restart: always
+    ports:
+      - "5000:8080"
+    depends_on:
+      - postgres-db
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=mobylab-app;Username=mobylab-app;Password=mobylab-app
     networks:
-      - artisthub-net
-
-  business-logic-service:
-    build: ./business-logic-service
-    image: artisthub/business-logic
-    networks:
-      - artisthub-net
-
-  upload-service:
-    build: ./upload-service
-    image: artisthub/upload-service
-    networks:
-      - artisthub-net
-
-  topics-service:
-    build: ./topics-service
-    image: artisthub/topics-service
-    networks:
-      - artisthub-net
-
-  display-service:
-    build: ./display-service
-    image: artisthub/display-service
-    networks:
-      - artisthub-net
+      - backend-network
 
   frontend:
-    build: ./frontend
-    image: artisthub/frontend
+    build:
+      context: ./frontend
+    container_name: frontend
+    restart: always
     ports:
       - "3000:80"
-    depends_on:
-      - kong
     networks:
-      - artisthub-net
-
-  postgres-db:
-    image: postgres:15
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin123
-      POSTGRES_DB: artisthub
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    networks:
-      - artisthub-net
-
-  prometheus:
-    image: prom/prometheus
-    volumes:
-      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
-    networks:
-      - artisthub-net
-
-  grafana:
-    image: grafana/grafana
-    ports:
-      - "3001:3000"
-    volumes:
-      - grafana-data:/var/lib/grafana
-    networks:
-      - artisthub-net
-
-  portainer:
-    image: portainer/portainer-ce
-    ports:
-      - "9000:9000"
-    volumes:
-      - portainer-data:/data
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - artisthub-net
+      - backend-network
 
 volumes:
-  postgres-data:
-  grafana-data:
-  portainer-data:
+  db-data:
 
 networks:
-  artisthub-net:
-    driver: overlay
-    attachable: true
+  backend-network:
