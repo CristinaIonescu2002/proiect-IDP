@@ -1,40 +1,10 @@
-_format_version: "3.0"
+_format_version: "2.1"
+
 services:
-  - name: auth-service
-    url: http://auth-service:80
+  - name: backend
+    url: http://backend:8080
     routes:
-      - name: auth-routes
+      - name: backend-route
         paths:
-          - /auth
+          - /
 
-  - name: business-logic
-    url: http://business-logic-service:80
-    routes:
-      - name: logic-routes
-        paths:
-          - /api
-
-  - name: upload-service
-    url: http://upload-service:80
-    routes:
-      - name: upload-routes
-        paths:
-          - /upload
-
-  - name: topics-service
-    url: http://topics-service:80
-    routes:
-      - name: topics-routes
-        paths:
-          - /topics
-
-  - name: display-service
-    url: http://display-service:80
-    routes:
-      - name: display-routes
-        paths:
-          - /display
-
-# apelare in react
-# api.get("/auth/login")
-# api.get("/topics/list")
