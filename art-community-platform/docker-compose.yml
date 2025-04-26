@@ -21,8 +21,8 @@ services:
       context: ./backend
     container_name: backend
     restart: always
-    ports:
-      - "5000:8080"
+    expose:
+      - "8080"
     depends_on:
       - postgres-db
     environment:
@@ -38,6 +38,26 @@ services:
     restart: always
     ports:
       - "3000:80"
+    networks:
+      - backend-network
+
+  kong:
+    image: kong:3.4
+    container_name: kong
+    restart: always
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /usr/local/kong/kong.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+    ports:
+      - "8000:8000"   # Portul public prin care Kong servește API-urile
+      - "8001:8001"   # Portul de admin pentru Kong
+    volumes:
+      - ./kong/kong.yml:/usr/local/kong/kong.yml
     networks:
       - backend-network
 

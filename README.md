@@ -4,6 +4,13 @@
 #### Descriere
 Platforma noastra este dedicata comunitatii artistice si are ca scop facilitarea accesului la referinte vizuale utile in procesul creativ. Utilizatorii pot incarca imagini de referinta, pot asocia lucrarile proprii cu aceste referinte, si pot naviga continutul prin filtre si topicuri de interes. Platforma ofera si o componenta sociala, prin posibilitatea de a urmarii topicuri de interes, de a aprecia sau comenta lucrarile postate.
 
+#### 
+- accesare front: ``http://localhost:3000/``
+- accesare swagger prin kong: ``http://localhost:8000/swagger/index.html``
+
+
+-- trebuie ulat intr-un docker swarm
+
 #### Comenzi si info utile
 - frontend
     - ```npm run dev``` - porneste un server local de development oferit de Vite (este doar pentru development)
