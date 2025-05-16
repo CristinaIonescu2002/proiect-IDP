@@ -14,48 +14,83 @@ services:
     networks:
       - artisthub-net
 
-  auth-service:
-    build: ./auth-service
-    image: artisthub/auth-service
-    networks:
-      - artisthub-net
+  # auth-service:
+  #   build: ./auth-service
+  #   image: artisthub/auth-service
+  #   networks:
+  #     - artisthub-net
 
-  business-logic-service:
-    build: ./business-logic-service
-    image: artisthub/business-logic
-    networks:
-      - artisthub-net
+  # business-logic-service:
+  #   build: ./business-logic-service
+  #   image: artisthub/business-logic
+  #   networks:
+  #     - artisthub-net
 
-  upload-service:
-    build: ./upload-service
-    image: artisthub/upload-service
-    networks:
-      - artisthub-net
+  # upload-service:
+  #   build: ./upload-service
+  #   image: artisthub/upload-service
+  #   networks:
+  #     - artisthub-net
 
-  topics-service:
-    build: ./topics-service
-    image: artisthub/topics-service
-    networks:
-      - artisthub-net
+  # topics-service:
+  #   build: ./topics-service
+  #   image: artisthub/topics-service
+  #   networks:
+  #     - artisthub-net
 
-  display-service:
-    build: ./display-service
-    image: artisthub/display-service
-    networks:
-      - artisthub-net
+  # display-service:
+  #   build: ./display-service
+  #   image: artisthub/display-service
+  #   networks:
+  #     - artisthub-net
 
-  frontend:
-    build: ./frontend
-    image: artisthub/frontend
+  micro-auth:
+    image: cojo64/micro-auth:latest
     ports:
-      - "3000:80"
+      - 1923:5001
+    environment:
+      DATABASE_URL: postgres://admin:admin123@postgres-db:5432/artisthub
     depends_on:
-      - kong
+      - postgres-db
     networks:
       - artisthub-net
+      
+  micro-media:
+    image: cojo64/micro-media:latest
+    ports:
+      - 1947:5001
+    environment:
+      DATABASE_URL: postgres://admin:admin123@postgres-db:5432/artisthub
+    depends_on:
+      - postgres-db
+    networks:
+      - artisthub-net
+      
+  micro-ref:
+    image: cojo64/micro-ref:latest
+    ports:
+      - 1948:5001
+    environment:
+      DATABASE_URL: postgres://admin:admin123@postgres-db:5432/artisthub
+    depends_on:
+      - postgres-db
+    networks:
+      - artisthub-net
+
+  # frontend:
+  #   build: ./frontend
+  #   image: artisthub/frontend
+  #   ports:
+  #     - "3000:80"
+  #   depends_on:
+  #     - kong
+  #   networks:
+  #     - artisthub-net
 
   postgres-db:
     image: postgres:15
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin123
@@ -100,5 +135,6 @@ volumes:
 
 networks:
   artisthub-net:
-    driver: overlay
+    # driver: overlay
     attachable: true
+    external: true
