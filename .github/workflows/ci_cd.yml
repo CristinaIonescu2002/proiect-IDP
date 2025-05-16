@@ -23,20 +23,6 @@ jobs:
       - name: Run Docker Compose services
         run: docker compose up -d
 
-      - name: Wait for services to be ready
-        run: |
-          echo "Waiting for services to start (adjust sleep time as needed)..."
-          sleep 60
-          echo "Current Docker Compose status:"
-          docker compose ps
-          # ... (your health checks)
-
-      - name: Run Integration Tests (Example Placeholder)
-        run: |
-          echo "Running integration tests..."
-          # Example: curl -f http://localhost:5001/health || exit 1
-          echo "Tests completed (placeholder)."
-
       - name: Show Docker logs on failure
         if: failure()
         run: docker compose logs # Will use the job's default working-directory
