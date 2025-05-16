@@ -1,0 +1,46 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-run-compose:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./art-community-platform
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker images
+        run: docker compose build
+
+      - name: Run Docker Compose services
+        run: docker compose up -d
+
+      - name: Wait for services to be ready
+        run: |
+          echo "Waiting for services to start (adjust sleep time as needed)..."
+          sleep 60
+          echo "Current Docker Compose status:"
+          docker compose ps
+          # ... (your health checks)
+
+      - name: Run Integration Tests (Example Placeholder)
+        run: |
+          echo "Running integration tests..."
+          # Example: curl -f http://localhost:5001/health || exit 1
+          echo "Tests completed (placeholder)."
+
+      - name: Show Docker logs on failure
+        if: failure()
+        run: docker compose logs # Will use the job's default working-directory
+
+      - name: Stop and remove Docker Compose services
+        if: always()
+        run: docker compose down -v --remove-orphans # Will use the job's default working-directory
