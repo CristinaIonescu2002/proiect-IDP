@@ -24,6 +24,9 @@ services:
 
   micro-auth:
     image: cojo64/micro-auth:latest
+    ports:
+      - "1923:1923"
+      - "1923:80"
     environment:
       ConnectionStrings__DefaultConnection: "Host=postgres-db;Port=5432;Database=artisthub;Username=admin;Password=admin123;Include Error Detail=true"
       ASPNETCORE_ENVIRONMENT: Production
@@ -37,6 +40,9 @@ services:
 
   micro-media:
     image: cojo64/micro-media:latest
+    ports:
+      - "1947:1947"
+      - "1947:80"
     environment:
       ConnectionStrings__DefaultConnection: "Host=postgres-db;Port=5432;Database=artisthub;Username=admin;Password=admin123;Include Error Detail=true"
       ASPNETCORE_ENVIRONMENT: Production
@@ -50,6 +56,9 @@ services:
 
   micro-ref:
     image: cojo64/micro-ref:latest
+    ports:
+      - "1948:1948"
+      - "1948:80"
     environment:
       ConnectionStrings__DefaultConnection: "Host=postgres-db;Port=5432;Database=artisthub;Username=admin;Password=admin123;Include Error Detail=true"
       ASPNETCORE_ENVIRONMENT: Production
