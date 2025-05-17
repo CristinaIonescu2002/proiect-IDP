@@ -25,8 +25,7 @@ services:
   micro-auth:
     image: cojo64/micro-auth:latest
     ports:
-      - "1923:1923"
-      - "1923:80"
+      - "1923:5001"
     environment:
       ConnectionStrings__DefaultConnection: "Host=postgres-db;Port=5432;Database=artisthub;Username=admin;Password=admin123;Include Error Detail=true"
       ASPNETCORE_ENVIRONMENT: Production
@@ -41,8 +40,7 @@ services:
   micro-media:
     image: cojo64/micro-media:latest
     ports:
-      - "1947:1947"
-      - "1947:80"
+      - "1947:5001"
     environment:
       ConnectionStrings__DefaultConnection: "Host=postgres-db;Port=5432;Database=artisthub;Username=admin;Password=admin123;Include Error Detail=true"
       ASPNETCORE_ENVIRONMENT: Production
@@ -57,10 +55,9 @@ services:
   micro-ref:
     image: cojo64/micro-ref:latest
     ports:
-      - "1948:1948"
-      - "1948:80"
+      - "1948:5001"
     environment:
-      ConnectionStrings__DefaultConnection: "Host=postgres-db;Port=5432;Database=artisthub;Username=admin;Password=admin123;Include Error Detail=true"
+      ConnectionStrings__DefaultConnection: S"Host=postgres-db;Port=5432;Database=artisthub;Username=admin;Password=admin123;Include Error Detail=true"
       ASPNETCORE_ENVIRONMENT: Production
     networks:
       - backend-net
@@ -120,9 +117,6 @@ services:
       - "3001:3000" # Public access to Grafana UI
     volumes:
       - grafana-data:/var/lib/grafana
-    environment: # Optional: configure admin user/pass
-    # GF_SECURITY_ADMIN_USER: admin
-    # GF_SECURITY_ADMIN_PASSWORD: yourgrafanapassword
     networks:
       - monitoring-net # To connect to Prometheus
       - frontend-net   # For UI access
