@@ -23,10 +23,6 @@ jobs:
       - name: Run Docker Stack services
         run: docker stack deploy -c docker-stack.yml artisthub
 
-      - name: Show Docker logs on failure
-        if: failure()
-        run: docker compose logs # Will use the job's default working-directory
-
-      - name: Stop and remove Docker Compose services
+      - name: Stop and remove Docker Stack services
         if: always()
-        run: docker compose down -v --remove-orphans # Will use the job's default working-directory
+        run: docker stack rm artisthub
