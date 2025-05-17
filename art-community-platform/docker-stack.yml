@@ -1,0 +1,160 @@
+version: "3.8"
+
+services:
+  kong:
+    image: kong:3.4
+    ports:
+      - "8000:8000"  # Public API Proxy
+      - "8001:8001"  # Admin API (consider if this should be on backend-net only)
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /usr/local/kong/kong.yml
+      # For Kong Admin API to listen on backend-net if desired (more secure)
+      # KONG_ADMIN_LISTEN: '0.0.0.0:8001, 0.0.0.0:8444 ssl, [::]:8001, [::]:8444 ssl'
+      # KONG_ADMIN_LISTEN_OFF: 'true' # Disable default admin listen if customising
+    volumes:
+      - ./art-community-platform/kong/kong.yml:/usr/local/kong/kong.yml:ro
+    networks:
+      - frontend-net # For proxy traffic
+      - backend-net  # For routing to backend services & potentially admin API access
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  micro-auth:
+    image: cojo64/micro-auth:latest
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=postgres-db;Port=5432;Database=artisthub;Username=admin;Password=admin123;Include Error Detail=true"
+      ASPNETCORE_ENVIRONMENT: Production
+    networks:
+      - backend-net   # For Kong to reach it, and for DB access
+      - monitoring-net # For Prometheus to scrape metrics (if applicable)
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  micro-media:
+    image: cojo64/micro-media:latest
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=postgres-db;Port=5432;Database=artisthub;Username=admin;Password=admin123;Include Error Detail=true"
+      ASPNETCORE_ENVIRONMENT: Production
+    networks:
+      - backend-net
+      - monitoring-net
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  micro-ref:
+    image: cojo64/micro-ref:latest
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=postgres-db;Port=5432;Database=artisthub;Username=admin;Password=admin123;Include Error Detail=true"
+      ASPNETCORE_ENVIRONMENT: Production
+    networks:
+      - backend-net
+      - monitoring-net
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  # frontend: # Uncomment and configure if you have a frontend service
+  #   image: your-frontend-image:latest
+  #   ports:
+  #     - "80:80" # Or "3000:80" etc.
+  #   networks:
+  #     - frontend-net
+  #   deploy:
+  #     replicas: 1
+  #     restart_policy:
+  #       condition: on-failure
+
+  postgres-db:
+    image: postgres:15
+    # ports: - "5432:5432" # Expose only if direct host access needed
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: artisthub
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - backend-net # Only accessible by services on the backend network
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: on-failure
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./art-community-platform/monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090" # Public access to Prometheus UI
+    networks:
+      - monitoring-net # To scrape targets
+      - frontend-net   # Optional: if you want its UI directly accessible like other front-facing UIs
+      # Or keep it only on monitoring-net and access via port mapping or another proxy
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000" # Public access to Grafana UI
+    volumes:
+      - grafana-data:/var/lib/grafana
+    environment: # Optional: configure admin user/pass
+    # GF_SECURITY_ADMIN_USER: admin
+    # GF_SECURITY_ADMIN_PASSWORD: yourgrafanapassword
+    networks:
+      - monitoring-net # To connect to Prometheus
+      - frontend-net   # For UI access
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  portainer:
+    image: portainer/portainer-ce:latest
+    ports:
+      - "9000:9000"
+    volumes:
+      - portainer-data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks: # Portainer might need to inspect all networks, or just be on a management/frontend network
+      - frontend-net # For UI access
+      # - backend-net # If it needs to interact with containers on that network directly (less common for just UI)
+      # - monitoring-net
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: on-failure
+
+volumes:
+  postgres-data:
+    driver: local
+  grafana-data:
+    driver: local
+  portainer-data:
+    driver: local
+
+networks:
+  frontend-net:
+    driver: overlay
+    attachable: true
+  backend-net:
+    driver: overlay
+    attachable: true
+  monitoring-net:
+    driver: overlay
+    attachable: true
