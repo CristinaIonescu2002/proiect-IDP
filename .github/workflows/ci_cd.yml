@@ -20,8 +20,8 @@ jobs:
       - name: Build Docker images
         run: docker compose build
 
-      - name: Run Docker Compose services
-        run: docker compose up -d
+      - name: Run Docker Stack services
+        run: docker stack deploy -c docker-stack.yml artisthub
 
       - name: Show Docker logs on failure
         if: failure()
