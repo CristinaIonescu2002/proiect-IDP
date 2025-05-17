@@ -1,0 +1,97 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": null,
+    "title": "Artisthub Microservices Monitoring",
+    "timezone": "browser",
+    "schemaVersion": 37,
+    "version": 1,
+    "refresh": "5s",
+    "panels": [
+      {
+        "type": "graph",
+        "title": "Microservices - Request Rate",
+        "gridPos": {
+          "x": 0,
+          "y": 0,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "rate(http_requests_total[1m])",
+            "legendFormat": "{{job}}",
+            "refId": "A"
+          }
+        ],
+        "lines": true,
+        "linewidth": 2,
+        "nullPointMode": "null",
+        "fill": 1,
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        }
+      },
+      {
+        "type": "graph",
+        "title": "Microservices - Request Duration (avg)",
+        "gridPos": {
+          "x": 12,
+          "y": 0,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "rate(http_request_duration_seconds_sum[1m]) / rate(http_request_duration_seconds_count[1m])",
+            "legendFormat": "{{job}}",
+            "refId": "B"
+          }
+        ],
+        "lines": true,
+        "linewidth": 2,
+        "nullPointMode": "null",
+        "fill": 1,
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        }
+      },
+      {
+        "type": "graph",
+        "title": "HTTP Errors (4xx/5xx)",
+        "gridPos": {
+          "x": 0,
+          "y": 9,
+          "w": 24,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{status=~\"4..\"}[1m])",
+            "legendFormat": "4xx - {{job}}",
+            "refId": "C"
+          },
+          {
+            "expr": "rate(http_requests_total{status=~\"5..\"}[1m])",
+            "legendFormat": "5xx - {{job}}",
+            "refId": "D"
+          }
+        ],
+        "lines": true,
+        "linewidth": 2,
+        "nullPointMode": "null",
+        "fill": 1,
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        }
+      }
+    ]
+  },
+  "overwrite": true
+}

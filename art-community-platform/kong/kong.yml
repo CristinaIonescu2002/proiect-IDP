@@ -1,40 +1,26 @@
 _format_version: "3.0"
+
 services:
-  - name: auth-service
-    url: http://auth-service:80
+  - name: micro-auth
+    url: http://micro-auth:5001
     routes:
-      - name: auth-routes
+      - name: auth-route
         paths:
           - /auth
+        strip_path: true  # <- Asta e important!
 
-  - name: business-logic
-    url: http://business-logic-service:80
+  - name: micro-media
+    url: http://micro-media:5001
     routes:
-      - name: logic-routes
+      - name: media-route
         paths:
-          - /api
+          - /media
+        strip_path: true
 
-  - name: upload-service
-    url: http://upload-service:80
+  - name: micro-ref
+    url: http://micro-ref:5001
     routes:
-      - name: upload-routes
+      - name: ref-route
         paths:
-          - /upload
-
-  - name: topics-service
-    url: http://topics-service:80
-    routes:
-      - name: topics-routes
-        paths:
-          - /topics
-
-  - name: display-service
-    url: http://display-service:80
-    routes:
-      - name: display-routes
-        paths:
-          - /display
-
-# apelare in react
-# api.get("/auth/login")
-# api.get("/topics/list")
+          - /ref
+        strip_path: true

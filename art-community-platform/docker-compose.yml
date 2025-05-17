@@ -14,62 +14,11 @@ services:
     networks:
       - artisthub-net
 
-  # auth-service:
-  #   build: ./auth-service
-  #   image: artisthub/auth-service
-  #   networks:
-  #     - artisthub-net
-
-  # business-logic-service:
-  #   build: ./business-logic-service
-  #   image: artisthub/business-logic
-  #   networks:
-  #     - artisthub-net
-
-  # upload-service:
-  #   build: ./upload-service
-  #   image: artisthub/upload-service
-  #   networks:
-  #     - artisthub-net
-
-  # topics-service:
-  #   build: ./topics-service
-  #   image: artisthub/topics-service
-  #   networks:
-  #     - artisthub-net
-
-  # display-service:
-  #   build: ./display-service
-  #   image: artisthub/display-service
-  #   networks:
-  #     - artisthub-net
-
   micro-auth:
     image: cojo64/micro-auth:latest
     ports:
       - 1923:5001
-    environment:
-      DATABASE_URL: postgres://admin:admin123@postgres-db:5432/artisthub
-    depends_on:
-      - postgres-db
-    networks:
-      - artisthub-net
-      
-  micro-media:
-    image: cojo64/micro-media:latest
-    ports:
-      - 1947:5001
-    environment:
-      DATABASE_URL: postgres://admin:admin123@postgres-db:5432/artisthub
-    depends_on:
-      - postgres-db
-    networks:
-      - artisthub-net
-      
-  micro-ref:
-    image: cojo64/micro-ref:latest
-    ports:
-      - 1948:5001
+    hostname: micro-auth
     environment:
       DATABASE_URL: postgres://admin:admin123@postgres-db:5432/artisthub
     depends_on:
@@ -77,15 +26,29 @@ services:
     networks:
       - artisthub-net
 
-  # frontend:
-  #   build: ./frontend
-  #   image: artisthub/frontend
-  #   ports:
-  #     - "3000:80"
-  #   depends_on:
-  #     - kong
-  #   networks:
-  #     - artisthub-net
+  micro-media:
+    image: cojo64/micro-media:latest
+    ports:
+      - 1947:5001
+    hostname: micro-media
+    environment:
+      DATABASE_URL: postgres://admin:admin123@postgres-db:5432/artisthub
+    depends_on:
+      - postgres-db
+    networks:
+      - artisthub-net
+
+  micro-ref:
+    image: cojo64/micro-ref:latest
+    ports:
+      - 1948:5001
+    hostname: micro-ref
+    environment:
+      DATABASE_URL: postgres://admin:admin123@postgres-db:5432/artisthub
+    depends_on:
+      - postgres-db
+    networks:
+      - artisthub-net
 
   postgres-db:
     image: postgres:15
@@ -136,5 +99,4 @@ volumes:
 networks:
   artisthub-net:
     # driver: overlay
-    attachable: true
-    external: true
+    driver: bridge
