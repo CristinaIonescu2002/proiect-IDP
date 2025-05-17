@@ -1,0 +1,31 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ cojobalaur2 ]
+  workflow_dispatch:
+
+jobs:
+  build-and-run-compose:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./art-community-platform
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker images
+        run: docker compose build
+
+      - name: Build Docker images
+        run: docker swarm init
+
+      - name: Run Docker Stack services
+        run: docker stack deploy -c docker-stack.yml artisthub
+
+      - name: Stop and remove Docker Stack services
+        if: always()
+        run: docker stack rm artisthub
