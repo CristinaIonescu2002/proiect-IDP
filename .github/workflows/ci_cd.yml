@@ -2,7 +2,7 @@ name: CI/CD
 
 on:
   push:
-    branches: [ cojobalaur2 ]
+    branches: [ cristinabalaur ]
   workflow_dispatch:
 
 jobs:
