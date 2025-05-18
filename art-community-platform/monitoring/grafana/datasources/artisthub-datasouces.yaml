@@ -3,13 +3,13 @@ datasources:
   - name: Postgres
     uid: Postgres
     type: postgres
-    url: mobylab-app-db:5432
-    database: mobylab-app
-    user: mobylab-app
+    url: postgres-db:5432
+    database: artisthub
+    user: admin
     jsonData:
       sslmode: disable         
     secureJsonData:
-      password: mobylab-app
+      password: admin123
     isDefault: true
 
   - name: Prometheus
