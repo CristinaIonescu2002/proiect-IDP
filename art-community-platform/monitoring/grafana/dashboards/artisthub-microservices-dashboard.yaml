@@ -1,8 +1,11 @@
 apiVersion: 1
 
 providers:
-  - name: 'Artisthub dashboards'
-    folder: ''
+  - name: 'app-metrics'
+    orgId: 1
+    folder: ''            # rădăcina unui folder nou în Grafana
     type: file
+    disableDeletion: false
+    editable: true
     options:
       path: /etc/grafana/provisioning/dashboards

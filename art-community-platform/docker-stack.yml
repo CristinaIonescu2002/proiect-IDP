@@ -57,7 +57,7 @@ services:
     ports:
       - "1948:5001"
     environment:
-      ConnectionStrings__DefaultConnection: S"Host=postgres-db;Port=5432;Database=artisthub;Username=admin;Password=admin123;Include Error Detail=true"
+      ConnectionStrings__DefaultConnection: "Host=postgres-db;Port=5432;Database=artisthub;Username=admin;Password=admin123;Include Error Detail=true"
       ASPNETCORE_ENVIRONMENT: Production
     networks:
       - backend-net
@@ -89,6 +89,7 @@ services:
       - postgres-data:/var/lib/postgresql/data
     networks:
       - backend-net # Only accessible by services on the backend network
+      - db-net
     deploy:
       replicas: 1
       placement:
@@ -97,35 +98,42 @@ services:
         condition: on-failure
 
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus
     volumes:
-      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/etc/prometheus/
     ports:
-      - "9090:9090" # Public access to Prometheus UI
+      - "9090:9090"
     networks:
-      - monitoring-net # To scrape targets
-      - frontend-net   # Optional: if you want its UI directly accessible like other front-facing UIs
-      # Or keep it only on monitoring-net and access via port mapping or another proxy
+      - db-net
+    configs:
+      - source: prometheus-config
+        target: /etc/prometheus/prometheus.yml
     deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
+      placement:
+        constraints: [node.role == manager]
+
+  node-exporter:
+    image: prom/node-exporter
+    networks:
+      - db-net
+    deploy:
+      mode: global
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana
     ports:
-      - "3001:3000" # Public access to Grafana UI
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
       - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
     networks:
-      - monitoring-net # To connect to Prometheus
-      - frontend-net   # For UI access
+      - db-net
     deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
+      placement:
+        constraints: [node.role == manager]
 
   portainer:
     image: portainer/portainer-ce:latest
@@ -173,6 +181,8 @@ volumes:
     driver: local
   pgadmin-data:
     driver: local
+  prometheus-data:
+    driver: local
 
 networks:
   frontend-net:
@@ -184,3 +194,11 @@ networks:
   monitoring-net:
     driver: overlay
     attachable: true
+  db-net:
+    driver: overlay
+    attachable: true
+    
+configs:
+  prometheus-config:
+    file: ./monitoring/prometheus/prometheus.yml
+
