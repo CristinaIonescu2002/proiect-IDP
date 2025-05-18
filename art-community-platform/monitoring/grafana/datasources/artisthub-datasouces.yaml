@@ -1,7 +1,7 @@
 apiVersion: 1
 
 providers:
-  - name: 'app-metrics'
+  - name: 'New panel'
     orgId: 1
     folder: ''            # rădăcina unui folder nou în Grafana
     type: file
