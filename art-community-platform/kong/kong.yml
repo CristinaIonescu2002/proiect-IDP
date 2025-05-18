@@ -6,11 +6,11 @@ services:
     routes:
       - name: auth-route
         paths:
-          - /auth
+          - /auth/
         strip_path: true  # <- Asta e important!
 
   - name: micro-media
-    url: http://micro-media:5001
+    url: http://micro-media:5001/swagger/index.html
     routes:
       - name: media-route
         paths:
@@ -18,9 +18,17 @@ services:
         strip_path: true
 
   - name: micro-ref
-    url: http://micro-ref:5001
+    url: http://micro-ref:5001/swagger/index.html
     routes:
       - name: ref-route
         paths:
           - /ref
+        strip_path: true
+        
+  - name: portainer
+    url: http://portainer:9000
+    routes:
+      - name: portainer-route
+        paths:
+          - /portainer/
         strip_path: true
