@@ -114,6 +114,8 @@ services:
 
   node-exporter:
     image: prom/node-exporter
+    user: "0"
+    privileged: true
     networks:
       - db-net
     deploy:
