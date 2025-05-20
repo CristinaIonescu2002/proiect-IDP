@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: 'New panel'
+    orgId: 1
+    folder: ''            # rădăcina unui folder nou în Grafana
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /etc/grafana/provisioning/dashboards

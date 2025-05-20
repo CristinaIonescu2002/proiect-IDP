@@ -1,101 +1,102 @@
 version: "3.8"
 
 services:
-  postgres-db:
-    image: postgres:13.2-alpine
-    container_name: postgres-db
-    restart: always
-    environment:
-      POSTGRES_USER: mobylab-app
-      POSTGRES_DB: mobylab-app
-      POSTGRES_PASSWORD: mobylab-app
-    ports:
-      - "5432:5432"
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    networks:
-      - backend-network
-
-  backend:
-    build:
-      context: ./backend
-    container_name: backend
-    restart: always
-    ports:
-      - "8080:8080"
-    expose:
-      - "8080"
-    depends_on:
-      - postgres-db
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=postgres-db;Database=mobylab-app;Username=mobylab-app;Password=mobylab-app
-    networks:
-      - backend-network
-
-  frontend:
-    build:
-      context: ./frontend
-    container_name: frontend
-    restart: always
-    ports:
-      - "3000:80"
-    networks:
-      - backend-network
-
   kong:
     image: kong:3.4
-    container_name: kong
-    restart: always
+    ports:
+      - "8000:8000"     # Public API
+      - "8001:8001"     # Admin API
     environment:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /usr/local/kong/kong.yml
-      KONG_PROXY_ACCESS_LOG: /dev/stdout
-      KONG_ADMIN_ACCESS_LOG: /dev/stdout
-      KONG_PROXY_ERROR_LOG: /dev/stderr
-      KONG_ADMIN_ERROR_LOG: /dev/stderr
-      KONG_ADMIN_LISTEN: 0.0.0.0:8001
-    ports:
-      - "8000:8000"   # Portul public
-      - "8001:8001"   # Portul de admin
     volumes:
       - ./kong/kong.yml:/usr/local/kong/kong.yml
     networks:
-      - backend-network
+      - artisthub-net
+
+  micro-auth:
+    image: cojo64/micro-auth:latest
+    ports:
+      - 1923:5001
+    hostname: micro-auth
+    environment:
+      DATABASE_URL: postgres://admin:admin123@postgres-db:5432/artisthub
+    depends_on:
+      - postgres-db
+    networks:
+      - artisthub-net
+
+  micro-media:
+    image: cojo64/micro-media:latest
+    ports:
+      - 1947:5001
+    hostname: micro-media
+    environment:
+      DATABASE_URL: postgres://admin:admin123@postgres-db:5432/artisthub
+    depends_on:
+      - postgres-db
+    networks:
+      - artisthub-net
+
+  micro-ref:
+    image: cojo64/micro-ref:latest
+    ports:
+      - 1948:5001
+    hostname: micro-ref
+    environment:
+      DATABASE_URL: postgres://admin:admin123@postgres-db:5432/artisthub
+    depends_on:
+      - postgres-db
+    networks:
+      - artisthub-net
+
+  postgres-db:
+    image: postgres:15
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: artisthub
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - artisthub-net
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - artisthub-net
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - artisthub-net
 
   portainer:
-    image: portainer/portainer-ce:latest
-    container_name: portainer
-    restart: always
+    image: portainer/portainer-ce
     ports:
       - "9000:9000"
     volumes:
+      - portainer-data:/data
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
-      - backend-network
-
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    restart: always
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-    networks:
-      - backend-network
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
-    restart: always
-    ports:
-      - "3001:3000"
-    networks:
-      - backend-network
+      - artisthub-net
 
 volumes:
-  db-data:
+  postgres-data:
+  grafana-data:
+  portainer-data:
 
 networks:
-  backend-network:
+  artisthub-net:
+    # driver: overlay
+    driver: bridge
